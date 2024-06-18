@@ -1,0 +1,10 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.bg-color{
+    background-color: aqua;
+    padding: 15px 0px;
+    text-align: center;
+}
