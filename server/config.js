@@ -1,0 +1,34 @@
+const express = require('express')
+const path = require('path')
+const cors = require('cors')
+
+class Server {
+  constructor() {
+    this.app = express()
+    this.port = process.env.PORT || 8080
+
+    this.middleware()
+    this.routes()
+  }
+
+  middleware() {
+    /* middlewares */
+    this.app.use(express.json())
+    /* archivos estaticos  */
+    this.app.use(express.static(path.join(__dirname, 'public')))
+    /* cors */
+    this.app.use(cors())
+  }
+
+  routes() { 
+    this.app.use('/api/productos', require('../routes/productos.routes'))
+  }
+
+  listen() {
+    this.app.listen(this.port, () => {
+      console.log('server ok ', this.port)
+    })
+  }
+}
+
+module.exports = Server
