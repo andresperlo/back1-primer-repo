@@ -15,7 +15,7 @@ class Server {
     /* middlewares */
     this.app.use(express.json())
     /* archivos estaticos  */
-    this.app.use(express.static(path.join(__dirname, 'public')))
+    this.app.use(express.static(path.join(__dirname, '../public')))
     /* cors */
     this.app.use(cors())
   }
