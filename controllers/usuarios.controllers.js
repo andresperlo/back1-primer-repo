@@ -1,76 +1,63 @@
-const usuarios = [
-  {
-    id: 1,
-    nombreDeUsuario: 'andres2024',
-    emailDelUsuario: 'andresperlo@gmail.com',
-    contrasenia: '123456789'
-  }
-]
+const serviceUsuario = require('../services/usuarios.sevices')
 
-const registrarUsuario = (req, res) => {
+const registrarUsuario = async (req, res) => {
   try {
-    const body = req.body
-    const emailExiste = usuarios.find((usuario) => usuario.emailDelUsuario === body.emailDelUsuario)
-    const usuarioExiste = usuarios.find((usuario) => usuario.nombreDeUsuario === body.nombreDeUsuario)
-
-    if (emailExiste) {
-      return res.status(400).json({ msg: 'Email no disponible' })
-    } else if (usuarioExiste) {
-      return res.status(400).json({ msg: 'Usuario no disponible' })
+    const result = await serviceUsuario.nuevoUsuario(req.body)
+    if (result === 201) {
+      res.status(201).json({ msg: 'Usuario registrado con exito' })
     }
-
-    const id = crypto.randomUUID()
-
-    usuarios.push({ id, baja: false, ...body })
-    res.status(200).json({ msg: 'Usuario registrado con exito' })
   } catch (error) {
     console.log(error)
   }
 }
 
-const obtenerTodosLosUsuarios = (req, res) => {
+const iniciarSesionUsuario = async(req, res) => {
   try {
+    const result = await serviceUsuario.inicioSesion(req.body)
+
+    if(result === 400){
+      res.status(400).json({msg:'Usuario y/o contraseña incorrecto'})
+    }else{
+      res.status(200).json({msg:'Usuario inicio sesion'})
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const obtenerTodosLosUsuarios = async (req, res) => {
+  try {
+    const usuarios = await serviceUsuario.obtenerTodosLosUsuarios()
     res.status(200).json(usuarios)
   } catch (error) {
     console.log(error)
   }
 }
 
-const obtenerUnUsuario = (req, res) => {
+const obtenerUnUsuario = async (req, res) => {
   try {
-    const id = Number(req.params.idUsuario)
-    const usuario = usuarios.find((user) => user.id === id)
-
-    if (!usuario) {
-      return res.status(400).json({ msg: 'usuario no encontrado' })
-    }
-
+    const usuario = await serviceUsuario.obtenerUnUsuario(req.params.idUsuario)
     res.status(200).json({ msg: 'Usuario encontrado', usuario })
   } catch (error) {
     console.log(error)
   }
 }
 
-const bajaFisicaUsuario = (req, res) => {
+const bajaFisicaUsuario = async (req, res) => {
   try {
-    const id = req.params.idUsuario
-    const posicionDelUsuario = usuarios.findIndex((usuario) => usuario.id === id)
-    usuarios.splice(posicionDelUsuario, 1)
-
-    res.status(200).json(usuarios)
+    const res = await serviceUsuario.bajaUsuarioFisica(req.params.idUsuario)
+    if (res === 200) {
+      res.status(200).json({ msg: 'Usuario borrado con exito' })
+    }
   } catch (error) {
     console.log(error)
   }
 }
 
-const bajaLogicaUsuario = (req, res) => {
+const bajaLogicaUsuario = async (req, res) => {
   try {
-    const id = req.params.idUsuario
-    const posicionDelUsuario = usuarios.findIndex((usuario) => usuario.id === id)
-
-    usuarios[posicionDelUsuario].baja = !usuarios[posicionDelUsuario].baja
-    const mensaje = usuarios[posicionDelUsuario].baja ? 'Usuario bloqueado' : 'Usuario Activo'
-    res.status(200).json({msg: mensaje})
+    const usuario = await serviceUsuario.bajaUsuarioLogica(req.params.idUsuario)
+    res.status(200).json({ usuario })
   } catch (error) {
     console.log(error)
   }
@@ -78,6 +65,7 @@ const bajaLogicaUsuario = (req, res) => {
 
 module.exports = {
   registrarUsuario,
+  iniciarSesionUsuario,
   obtenerTodosLosUsuarios,
   obtenerUnUsuario,
   bajaFisicaUsuario,

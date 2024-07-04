@@ -1,49 +1,25 @@
-let productos = [
-  {
-    id: 1,
-    nombre: 'Celular',
-    precio: 100000
-  },
-  {
-    id: 2,
-    nombre: 'Tablet',
-    precio: 120000
-  }
-]
+const serviciosProductos = require('../services/productos.services')
 
-const obtenerUnProductoPorIdOTodos = (req, res) => {
+const obtenerUnProductoPorIdOTodos = async(req, res) => {
   try {
-    /* Request - Es la peticion que el front nos envia al back*/
-    /* Response - Es la repuesta del back al front */
-    /* response - status - formato */
-    const id = Number(req.query.id)
-
+    const id = req.query.id 
+    
     if (id) {
-      const producto = productos.find((prod) => prod.id === id)
+      const producto = await serviciosProductos.obtenerUnProducto(id)
       res.status(200).json(producto)
     } else {
+      const productos = await serviciosProductos.obtenerTodosLosProductos()
       res.status(200).json(productos)
     }
   } catch (error) {
-    /* response - status - formato */
     res.status(500).json(error)
   }
 }
 
-const crearProducto =  (req, res) => {
+const crearProducto = async (req, res) => {
   try {
-    /* const dataProducto = req.body */
-    //const {nombre, precio} = req.body
-    /* spread operator ... */
-
-    console.log(req.body)
-    const nuevoProducto = {
-      id: productos[productos.length - 1].id + 1,
-      ...req.body
-    }
-    console.log(nuevoProducto)
-    productos.push(nuevoProducto)
-
+    const nuevoProducto = await serviciosProductos.nuevoProducto(req.body)
+    await nuevoProducto.save()
     res.status(201).json(nuevoProducto)
 
   } catch (error) {
@@ -51,31 +27,25 @@ const crearProducto =  (req, res) => {
   }
 }
 
-const editarProductoPorId = (req, res) => {
+const editarProductoPorId = async(req, res) => {
   try {
-    const id = Number(req.params.idProducto)
-    const posicionProductoEnElArray = productos.findIndex((producto) => producto.id === id)
-
-    const productoEditado = {
-      id,
-      ...req.body
-    }
-
-    productos[posicionProductoEnElArray] = productoEditado
-
-    res.status(200).json(productos[posicionProductoEnElArray])
-
+    const id = req.params.idProducto
+    const productoActualizado = await  serviciosProductos.editarProducto(id, req.body)
+    res.status(200).json(productoActualizado)
   } catch (error) {
     res.status(500).json(error)
   }
 }
 
-const eliminarProductoPorId =  (req, res) => {
+const eliminarProductoPorId = async(req, res) => {
   try {
-    const id = Number(req.params.idProducto)
-    const productosNoBorrados = productos.filter((producto) => producto.id !== id)
-    productos = productosNoBorrados
-    res.status(200).json(productos)
+    const id = req.params.idProducto
+    let res = await serviciosProductos.eliminarProducto(id)
+
+    if (res === 200) {
+      res.status(200).json({ msg: 'Producto eliminado' })
+    }
+
   } catch (error) {
     res.status(500).json(error)
   }
