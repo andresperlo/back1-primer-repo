@@ -2,6 +2,7 @@ const { Router } = require('express')
 const { registrarUsuario, obtenerTodosLosUsuarios, obtenerUnUsuario, bajaFisicaUsuario, bajaLogicaUsuario, iniciarSesionUsuario } = require('../controllers/usuarios.controllers')
 const router = Router()
 const { check } = require('express-validator')
+const auth = require('../middlewares/auth')
 
 router.post('/', [
   check('nombreUsuario', 'Campo USUARIO esta vacio').not().isEmpty(),
@@ -14,11 +15,11 @@ router.post('/login', [
   check('nombreUsuario', 'Campo USUARIO esta vacio').not().isEmpty(),
   check('contrasenia', 'Campo CONTRASEÑA esta vacio').not().isEmpty(),
 ], iniciarSesionUsuario)
-router.get('/', obtenerTodosLosUsuarios)
+router.get('/', auth('admin'),obtenerTodosLosUsuarios)
 router.get('/:idUsuario', [
 /*   check('_id', 'Formato ID incorrecto').isMongoId() */
-], obtenerUnUsuario)
-router.delete('/:idUsuario', bajaFisicaUsuario)
-router.put('/:idUsuario', bajaLogicaUsuario)
+],auth('admin'), obtenerUnUsuario)
+router.delete('/:idUsuario', auth('admin'),bajaFisicaUsuario)
+router.put('/:idUsuario', auth('admin'),bajaLogicaUsuario)
 
 module.exports = router

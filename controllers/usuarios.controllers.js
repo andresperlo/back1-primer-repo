@@ -1,6 +1,7 @@
 const serviceUsuario = require('../services/usuarios.sevices')
 const { validationResult } = require('express-validator')
 
+
 const registrarUsuario = async (req, res) => {
   try {
     const { errors } = validationResult(req)
@@ -24,10 +25,10 @@ const iniciarSesionUsuario = async (req, res) => {
   try {
     const result = await serviceUsuario.inicioSesion(req.body)
 
-    if (result === 400) {
+    if (result.code === 400) {
       res.status(400).json({ msg: 'Usuario y/o contraseña incorrecto' })
     } else {
-      res.status(200).json({ msg: 'Usuario inicio sesion' })
+      res.status(200).json({ msg: 'Usuario inicio sesion', token: result.token })
     }
   } catch (error) {
     console.log(error)

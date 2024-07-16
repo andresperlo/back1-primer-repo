@@ -1,23 +1,25 @@
 const UsuarioModel = require("../models/usuario.schema")
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const { registroUsuario } = require("../helpers/mensajes")
 
 const nuevoUsuario = async (body) => {
   try {
-    const usuarioExiste = await UsuarioModel.findOne({nombreUsuario: body.nombreUsuario})
+    const usuarioExiste = await UsuarioModel.findOne({ nombreUsuario: body.nombreUsuario })
 
-    if(usuarioExiste){
+    if (usuarioExiste) {
       return 400
     }
 
-    if(body.rol !== 'usuario' && body.rol !== 'admin'){
+    if (body.rol !== 'usuario' && body.rol !== 'admin') {
       return 409
     }
-    
+
     let salt = bcrypt.genSaltSync();
     body.contrasenia = bcrypt.hashSync(body.contrasenia, salt);
 
-    
 
+    registroUsuario()
     const usuario = new UsuarioModel(body)
     await usuario.save()
     return 201
@@ -26,28 +28,40 @@ const nuevoUsuario = async (body) => {
   }
 }
 
-const inicioSesion = async(body) => {
-try {
+const inicioSesion = async (body) => {
+  try {
 
-  const usuarioExiste = await UsuarioModel.findOne({nombreUsuario: body.nombreUsuario})
+    const usuarioExiste = await UsuarioModel.findOne({ nombreUsuario: body.nombreUsuario })
 
-  if(!usuarioExiste){
-    return 400
+    if (!usuarioExiste) {
+      return { code: 400 }
+    }
+
+    const verificacionContrasenia = bcrypt.compareSync(body.contrasenia, usuarioExiste.contrasenia)
+
+    if (verificacionContrasenia) {
+
+      const payload = {
+        _id: usuarioExiste._id,
+        rol: usuarioExiste.rol,
+        bloqueado: usuarioExiste.bloqueado
+      }
+
+      const token = jwt.sign(payload, process.env.JWT_SECRET)
+
+      return {
+        code: 200,
+        token
+      }
+    } else {
+      return { code: 400 }
+    }
+
+
+
+  } catch (error) {
+    console.log(error)
   }
-
-  const verificacionContrasenia = bcrypt.compareSync(body.contrasenia, usuarioExiste.contrasenia)
-
-  if(verificacionContrasenia){
-    return 200
-  }else{
-    return 400
-  }
-
-  
-  
-} catch (error) {
-  console.log(error)
-}
 }
 
 const obtenerTodosLosUsuarios = async () => {

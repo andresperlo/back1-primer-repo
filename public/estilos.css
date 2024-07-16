@@ -8,3 +8,8 @@
     padding: 15px 0px;
     text-align: center;
 }
+
+.imagen-bienvenida{
+    display: flex;
+    justify-content: center;
+}
