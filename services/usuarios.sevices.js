@@ -1,12 +1,3 @@
-/* const usuarios = [
-  {
-    id: 1,
-    nombreDeUsuario: 'andres2024',
-    emailDelUsuario: 'andresperlo@gmail.com',
-    contrasenia: '123456789'
-  }
-] */
-
 const UsuarioModel = require("../models/usuario.schema")
 const bcrypt = require('bcrypt')
 
@@ -16,6 +7,10 @@ const nuevoUsuario = async (body) => {
 
     if(usuarioExiste){
       return 400
+    }
+
+    if(body.rol !== 'usuario' && body.rol !== 'admin'){
+      return 409
     }
     
     let salt = bcrypt.genSaltSync();
