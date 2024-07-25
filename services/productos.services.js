@@ -1,4 +1,8 @@
 const ProductModel = require('../models/producto.schema')
+const cloudinary = require('../helpers/cloudinary')
+const UsuarioModel = require('../models/usuario.schema')
+const CarritoModel = require('../models/carrito.schema')
+const FavModel = require('../models/favoritos.schema')
 
 const obtenerTodosLosProductos = async(limit, to) => {
   const [productos, cantidadTotal  ] = await Promise.all([
@@ -17,6 +21,17 @@ const obtenerTodosLosProductos = async(limit, to) => {
 const obtenerUnProducto = async(id) => {
   const producto = await ProductModel.findById({_id: id})
   return producto
+}
+
+const buscarProducto = async (termino) => {
+  const reglaBusqueda = new RegExp(termino, 'i')
+  const productos = await ProductModel.find({
+    $or: [
+      {nombre: reglaBusqueda},
+      {descripcion: reglaBusqueda}
+    ]
+  })
+  return productos
 }
 
 const nuevoProducto = (body) => {
@@ -53,10 +68,122 @@ const eliminarProducto = async(idProducto) => {
   }
 }
 
+const agregarImagen = async(idProducto, file) => {
+  const producto = await ProductModel.findOne({_id: idProducto})
+  const resultado = await cloudinary.uploader.upload(file.path)
+
+  producto.imagen = resultado.secure_url
+  await producto.save()
+
+  return 200
+}
+
+const agregarProducto = async (idUsuario, idProducto) => {
+   const usuario = await UsuarioModel.findById(idUsuario)
+   const producto = await ProductModel.findOne({_id: idProducto})
+   const carrito = await CarritoModel.findOne({_id: usuario.idCarrito})
+
+   const productoExiste = carrito.productos.find((prod) => prod._id.toString() === producto._id.toString())
+
+   if(productoExiste){
+    return {
+      msg:'Producto ya existe en el carrito',
+      statusCode: 400
+    }
+   }
+
+   carrito.productos.push(producto)
+   await carrito.save()
+
+   return {
+    msg:'Producto cargado correctamente en el carrito',
+    statusCode: 200
+   }
+}
+
+const quitarProducto = async (idUsuario, idProducto) => {
+  const usuario = await UsuarioModel.findById(idUsuario)
+  const producto = await ProductModel.findOne({_id: idProducto})
+  const carrito = await CarritoModel.findOne({_id: usuario.idCarrito})
+
+  const posicionProducto = carrito.productos.findIndex((prod) => prod._id.toString() === producto._id.toString())
+
+  if(posicionProducto < 0){
+    return {
+      msg:'No se encontro el producto que buscas',
+      statusCode: 400
+    }
+   }
+  
+
+  carrito.productos.splice(posicionProducto, 1)
+  
+  await carrito.save()
+
+  return {
+   msg:'Producto eliminado correctamente del carrito',
+   statusCode: 200
+  }
+}
+
+const agregarProductoFav = async (idUsuario, idProducto) => {
+  const usuario = await UsuarioModel.findById(idUsuario)
+  const producto = await ProductModel.findOne({_id: idProducto})
+  const favoritos = await FavModel.findOne({_id: usuario.idFavoritos})
+
+  const productoExiste = favoritos.productos.find((prod) => prod._id.toString() === producto._id.toString())
+
+  if(productoExiste){
+   return {
+     msg:'Producto ya existe en Favoritos',
+     statusCode: 400
+   }
+  }
+
+  favoritos.productos.push(producto)
+  await favoritos.save()
+
+  return {
+   msg:'Producto cargado correctamente a Favoritos',
+   statusCode: 200
+  }
+}
+
+const quitarProductoFav = async (idUsuario, idProducto) => {
+ const usuario = await UsuarioModel.findById(idUsuario)
+ const producto = await ProductModel.findOne({_id: idProducto})
+ const favoritos = await FavModel.findOne({_id: usuario.idFavoritos})
+
+ const posicionProducto = favoritos.productos.findIndex((prod) => prod._id.toString() === producto._id.toString())
+
+ 
+ if(posicionProducto < 0){
+  return {
+    msg:'No se encontro el producto que buscas',
+    statusCode: 400
+  }
+ }
+
+ favoritos.productos.splice(posicionProducto, 1)
+ 
+ await favoritos.save()
+
+ return {
+  msg:'Producto eliminado correctamente de Favoritos',
+  statusCode: 200
+ }
+}
+
 module.exports = {
   obtenerTodosLosProductos,
   obtenerUnProducto,
   nuevoProducto,
   editarProducto,
-  eliminarProducto
+  eliminarProducto,
+  agregarImagen,
+  buscarProducto,
+  agregarProducto,
+  quitarProducto,
+  agregarProductoFav,
+  quitarProductoFav
 }

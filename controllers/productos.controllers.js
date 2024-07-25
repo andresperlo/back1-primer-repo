@@ -67,9 +67,92 @@ const eliminarProductoPorId = async(req, res) => {
   }
 }
 
+const agregarImagenProductoPorId = async(req, res) => {
+  try {
+    
+    const resultado = await serviciosProductos.agregarImagen(req.params.idProducto, req.file)
+    if(resultado === 200){
+      return res.status(200).json({msg:'Se agrego la imagen correctamente'})
+    }
+    /* file - path - multer - cloudinary */
+    /* c://user/destok/imagen.jpg - .jpg - file */
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const buscarProductoPorTermino = async (req, res) => {
+  try {
+    const resultado = await serviciosProductos.buscarProducto(req.query.termino)
+    res.json(resultado)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const agregarProductoAlCarrito = async (req, res) => {
+  try {
+    const result = await serviciosProductos.agregarProducto(req.idUsuario, req.params.idProducto)
+
+    if(result.statusCode === 200){
+      res.status(200).json({msg: result.msg})
+    }else if(result.statusCode === 400){
+      res.status(400).json({msg: result.msg})
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const borrarProductoCarrito = async(req, res) => {
+  try {
+    const result = await serviciosProductos.quitarProducto(req.idUsuario, req.params.idProducto)
+    if(result.statusCode === 200){
+      res.status(200).json({msg: result.msg})
+    }
+
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const agregarProductoAlFavoritos = async (req, res) => {
+  try {
+    const result = await serviciosProductos.agregarProductoFav(req.idUsuario, req.params.idProducto)
+
+    if(result.statusCode === 200){
+      res.status(200).json({msg: result.msg})
+    }else if(result.statusCode === 400){
+      res.status(400).json({msg: result.msg})
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const borrarProductoFavoritos = async(req, res) => {
+  try {
+    const result = await serviciosProductos.quitarProductoFav(req.idUsuario, req.params.idProducto)
+    if(result.statusCode === 200){
+      res.status(200).json({msg: result.msg})
+    }else if(result.statusCode === 400){
+      res.status(400).json({msg: result.msg})
+    }
+
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 module.exports = {
   obtenerUnProductoPorIdOTodos,
   crearProducto,
   editarProductoPorId,
-  eliminarProductoPorId
+  eliminarProductoPorId,
+  agregarImagenProductoPorId,
+  buscarProductoPorTermino,
+  agregarProductoAlCarrito,
+  borrarProductoCarrito,
+  agregarProductoAlFavoritos,
+  borrarProductoFavoritos
 }
