@@ -144,6 +144,18 @@ const borrarProductoFavoritos = async(req, res) => {
   }
 }
 
+const mercadoPago = async (req, res) => {
+  try {
+
+    const resultMp = await serviciosProductos.pagoConMP(req.body)
+    if(resultMp.statusCode === 200){
+      res.status(200).json(resultMp.result.init_point)
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 module.exports = {
   obtenerUnProductoPorIdOTodos,
   crearProducto,
@@ -154,5 +166,6 @@ module.exports = {
   agregarProductoAlCarrito,
   borrarProductoCarrito,
   agregarProductoAlFavoritos,
-  borrarProductoFavoritos
+  borrarProductoFavoritos,
+  mercadoPago
 }

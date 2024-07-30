@@ -3,6 +3,7 @@ const cloudinary = require('../helpers/cloudinary')
 const UsuarioModel = require('../models/usuario.schema')
 const CarritoModel = require('../models/carrito.schema')
 const FavModel = require('../models/favoritos.schema')
+const { MercadoPagoConfig, Preference } = require('mercadopago')
 
 const obtenerTodosLosProductos = async(limit, to) => {
   const [productos, cantidadTotal  ] = await Promise.all([
@@ -174,6 +175,41 @@ const quitarProductoFav = async (idUsuario, idProducto) => {
  }
 }
 
+const pagoConMP = async (body) => {
+  const client = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN})
+  const preference = new Preference(client)
+  const result = await preference.create({
+    body: {
+      items:[
+        {
+          title:'cel 1',
+          quantity: 1,
+          unit_price: 150000,
+          currency_id:'ARS'
+        },
+        {
+          title:'cel 2',
+          quantity: 1,
+          unit_price: 150000,
+          currency_id:'ARS'
+        },
+      ],
+      back_urls: {
+        success:'myApp.netlify.com/carrito/success',
+        failure:'myApp.netlify.com/carrito/failure',
+        pending:'myApp.netlify.com/carrito/pending'
+      },
+      auto_return: 'approved'
+    }
+  })
+
+  return {
+    result,
+    statusCode: 200
+  }
+  
+}
+
 module.exports = {
   obtenerTodosLosProductos,
   obtenerUnProducto,
@@ -185,5 +221,6 @@ module.exports = {
   agregarProducto,
   quitarProducto,
   agregarProductoFav,
-  quitarProductoFav
+  quitarProductoFav,
+  pagoConMP
 }

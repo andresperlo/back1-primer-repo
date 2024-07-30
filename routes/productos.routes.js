@@ -1,5 +1,5 @@
 const express = require('express')
-const { obtenerUnProductoPorIdOTodos, crearProducto, editarProductoPorId, eliminarProductoPorId, agregarImagenProductoPorId, buscarProductoPorTermino, agregarProductoAlCarrito, borrarProductoCarrito, agregarProductoAlFavoritos, borrarProductoFavoritos } = require('../controllers/productos.controllers')
+const { obtenerUnProductoPorIdOTodos, crearProducto, editarProductoPorId, eliminarProductoPorId, agregarImagenProductoPorId, buscarProductoPorTermino, agregarProductoAlCarrito, borrarProductoCarrito, agregarProductoAlFavoritos, borrarProductoFavoritos, mercadoPago } = require('../controllers/productos.controllers')
 const { check } = require('express-validator')
 const auth = require('../middlewares/auth')
 const multer = require('../middlewares/multer')
@@ -14,6 +14,8 @@ router.post('/', [
   check('precio', 'campo PRECIO vacio').not().isEmpty(),
   check('descripcion', 'campo DESCRIPCION vacio').not().isEmpty(),
 ], auth('admin'), crearProducto)
+
+router.post('/crearPago', mercadoPago)
 
 router.post('/agregarProductoCarrito/:idProducto', auth('usuario'), agregarProductoAlCarrito)
 router.post('/quitarProductoCarrito/:idProducto', auth('usuario'), borrarProductoCarrito)
